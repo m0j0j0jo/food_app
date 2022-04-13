@@ -69,26 +69,27 @@ class FoodScores():
         food_index = 0
         user_index = 0
         for user_json_path in os.listdir(self.food_dir_path):
-            with open(user_json_path, 'r') as file:
+            with open(self.food_dir_path + user_json_path, 'r') as file:
                 data = json.load(file)
                 #todo parse user name
                 self.user_index[user_json_path] = user_index
                 user_index += 1
-            #todo
             temp = [0]*food_index
             for food in data['foods']:
                 if not self.food_index.get(food[self.FOOD_NAME]):
                     self.food_index[food[self.FOOD_NAME]] = food_index
                     if len(temp) <= food_index:
-                        temp.append(self.food_index.get(food[self.SCORE]))
+                        temp.append(food[self.SCORE])
                     #todo this case should not happen
                     else:
-                        temp[self.food_index.get(food[self.FOOD_NAME])] = self.food_index.get(food[self.SCORE])
+                        temp[self.food_index.get(food[self.FOOD_NAME])] = food[self.SCORE]
                     food_index += 1
                 else:
-                    temp[self.food_index.get(food[self.FOOD_NAME])] = self.food_index.get(food[self.SCORE])
-
-            #todo adjast matrix sizes
+                    temp[self.food_index.get(food[self.FOOD_NAME])] = food[self.SCORE]
+            self.user_score_matrix_data.append(temp)
+        for user_scores in self.user_score_matrix_data:
+            diff = user_index - len(user_scores)
+            user_scores.extend([0]*diff)
 
     def user_scores(self, user_name):
         return self.user_score_matrix[self.user_index[user_name]]
@@ -106,6 +107,7 @@ class FoodScores():
         nP, nQ = matrix_factorization(self.user_score_matrix_data, P, Q, K)
         self.user_score_matrix = numpy.dot(nP, nQ.T)
 
+
 if __name__ == '__main__':
     food_score = FoodScores()
-    print(food_score.user_scores('user_name'))
+    print(food_score.user_score_matrix)

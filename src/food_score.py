@@ -87,8 +87,9 @@ class FoodScores():
                 else:
                     temp[self.food_index.get(food[self.FOOD_NAME])] = food[self.SCORE]
             self.user_score_matrix_data.append(temp)
+        max_length = max([len(scores) for scores in self.user_score_matrix_data])
         for user_scores in self.user_score_matrix_data:
-            diff = user_index - len(user_scores)
+            diff = max_length - len(user_scores)
             user_scores.extend([0]*diff)
 
     def user_scores(self, user_name):
@@ -107,7 +108,32 @@ class FoodScores():
         nP, nQ = matrix_factorization(self.user_score_matrix_data, P, Q, K)
         self.user_score_matrix = numpy.dot(nP, nQ.T)
 
+    def best_food_choice(self):
+        argmax = 0
+        max_value = 0
+        for user_scores in food_score.user_score_matrix:
+            if max_value < max(user_scores):
+                max_value = max(user_scores)
+                argmax = numpy.argmax(user_scores)
+        for food_name, index in self.food_index.items():
+            if index == argmax:
+                return food_name
+        return 'no food for you'
+
+    def yours_food_choice(self, user):
+        user_index = 0
+        for user_name, index in self.user_index.items():
+            if user_name == user:
+                user_index = index
+
+        argmax = numpy.argmax(food_score.user_score_matrix[user_index])
+        for food_name, index in self.food_index.items():
+            if index == argmax:
+                return food_name
+        return 'no food for you'
+
 
 if __name__ == '__main__':
     food_score = FoodScores()
-    print(food_score.user_score_matrix)
+    print(food_score.best_food_choice())
+    print(food_score.yours_food_choice('gal'))
